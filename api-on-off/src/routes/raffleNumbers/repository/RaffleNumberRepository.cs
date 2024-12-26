@@ -33,16 +33,21 @@ namespace api_on_off.src.routes.raffleNumbers.repository
         /// </summary>
         /// <param name="raffleNumber">The raffle number entity to be created.</param>
         /// <exception cref="Exception">Thrown when there is an error creating the raffle number.</exception>
-        public async void CreateRaffleNumber(RaffleNumber raffleNumber)
+        public async Task<bool> CreateRaffleNumber(RaffleNumber raffleNumber)
         {
             try
             {
                 _context.RaffleNumbers.Add(raffleNumber);
                 await _context.SaveChangesAsync();
+                return true;
             }
             catch (Exception)
             {
-                throw new Exception("Error to create raffle number");
+                if (await _context.RaffleNumbers.AnyAsync(r => r.Number == raffleNumber.Number && r.RaffleId == raffleNumber.RaffleId))
+                {
+                    throw new InvalidOperationException("Raffle number already exists.");
+                }
+                return true;
             }
         }
     }
